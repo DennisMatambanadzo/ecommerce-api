@@ -1,4 +1,4 @@
-package com.epoch.ecommercebackend2.api.model.dao;
+package com.epoch.ecommercebackend2.model.dao;
 
 import com.epoch.ecommercebackend2.model.LocalUser;
 import org.springframework.data.repository.CrudRepository;
