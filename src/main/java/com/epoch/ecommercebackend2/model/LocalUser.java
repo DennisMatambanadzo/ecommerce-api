@@ -1,6 +1,7 @@
 package com.epoch.ecommercebackend2.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ public class LocalUser {
 
     @Column(name = "password", nullable = false, length = 1000)
     private String password;
+
 
     @Column(name = "email", nullable = false, unique = true, length = 320)
     private String email;
