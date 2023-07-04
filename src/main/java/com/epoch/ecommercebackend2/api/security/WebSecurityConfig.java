@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
+/**Configuration of the security endpoints*/
 @Configuration
 public class WebSecurityConfig {
 
@@ -16,6 +17,12 @@ public class WebSecurityConfig {
         this.jwtRequestFilter = jwtRequestFilter;
     }
 
+    /**
+     * Filter chain to configure security.
+     * @param http The security object.
+     * @return The chain built.
+     * @throws Exception Thrown on error configuring
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         http.csrf(AbstractHttpConfigurer::disable);

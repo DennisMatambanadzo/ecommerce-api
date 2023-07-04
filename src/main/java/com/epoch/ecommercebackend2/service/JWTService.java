@@ -16,18 +16,28 @@ public class JWTService {
     private String algorithmKey;
     @Value("${jwt.issuer}")
     private String issuer;
+    /**How many seconds from generation should the JWT expire*/
     @Value("${jwt.expiryInSeconds}")
     private int expiryInSeconds;
-
+    /**The algorithm generated post construction*/
     private Algorithm algorithm;
+    /**The JWT claim key for the username*/
     private static final String USERNAME_KEY = "USERNAME";
+
     private static final String EMAIL_KEY = "EMAIL";
 
+    /**
+     * Post construction method
+     */
     @PostConstruct
     public void postConstruct(){
         algorithm = Algorithm.HMAC256(algorithmKey);
     }
-
+    /**
+     * Generates a JWT based on the given user.
+     * @param user The user to generate for.
+     * @return The JWT
+     */
     public String generateJWT(LocalUser user){
         return JWT.create()
                 .withClaim(USERNAME_KEY, user.getUsername())
