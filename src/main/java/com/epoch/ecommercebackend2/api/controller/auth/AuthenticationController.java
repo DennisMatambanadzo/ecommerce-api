@@ -1,9 +1,11 @@
 package com.epoch.ecommercebackend2.api.controller.auth;
 
 import com.epoch.ecommercebackend2.api.model.LoginResponse;
+import com.epoch.ecommercebackend2.api.model.PasswordResetBody;
 import com.epoch.ecommercebackend2.api.model.RegistrationBody;
 import com.epoch.ecommercebackend2.api.model.LoginBody;
-import com.epoch.ecommercebackend2.exception.MailFailureException;
+import com.epoch.ecommercebackend2.exception.EmailFailureException;
+import com.epoch.ecommercebackend2.exception.EmailNotFoundException;
 import com.epoch.ecommercebackend2.exception.UserAlreadyExistsException;
 import com.epoch.ecommercebackend2.exception.UserNotVerifiedException;
 import com.epoch.ecommercebackend2.model.LocalUser;
@@ -36,7 +38,7 @@ public class AuthenticationController {
             return ResponseEntity.ok().build();
         }catch (UserAlreadyExistsException ex){
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        } catch (MailFailureException e) {
+        } catch (EmailFailureException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -59,7 +61,7 @@ public class AuthenticationController {
             }
             response.setFailureReason(reason);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-        } catch (MailFailureException ex) {
+        } catch (EmailFailureException ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
         if (jwt == null){
@@ -88,5 +90,23 @@ public class AuthenticationController {
     @GetMapping("/me")
     public LocalUser getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user){
         return user;
+    }
+
+    @PostMapping("/forgot")
+    public ResponseEntity forgotPassword(@RequestParam String email){
+        try{
+            userService.forgotPassword(email);
+            return ResponseEntity.ok().build();
+        } catch (EmailNotFoundException ex){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }catch (EmailFailureException ex){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/reset")
+    public ResponseEntity resetPassword(@Valid @RequestBody PasswordResetBody body){
+        userService.resetPassword(body);
+        return ResponseEntity.ok().build();
     }
 }

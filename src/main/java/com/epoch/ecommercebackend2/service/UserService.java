@@ -1,7 +1,9 @@
 package com.epoch.ecommercebackend2.service;
 
+import com.epoch.ecommercebackend2.api.model.PasswordResetBody;
 import com.epoch.ecommercebackend2.api.model.RegistrationBody;
-import com.epoch.ecommercebackend2.exception.MailFailureException;
+import com.epoch.ecommercebackend2.exception.EmailFailureException;
+import com.epoch.ecommercebackend2.exception.EmailNotFoundException;
 import com.epoch.ecommercebackend2.exception.UserNotVerifiedException;
 import com.epoch.ecommercebackend2.model.VerificationToken;
 import com.epoch.ecommercebackend2.model.dao.LocalUserDAO;
@@ -32,7 +34,7 @@ public class UserService {
         this.verificationTokenDAO = verificationTokenDAO;
     }
 
-    public LocalUser registerUser(RegistrationBody registrationBody) throws UserAlreadyExistsException, MailFailureException {
+    public LocalUser registerUser(RegistrationBody registrationBody) throws UserAlreadyExistsException, EmailFailureException {
         if( localUserDAO.findByEmailIgnoreCase(registrationBody.getEmail()).isPresent() ||
                 localUserDAO.findByUsernameIgnoreCase(registrationBody.getUsername()).isPresent()){
             throw new UserAlreadyExistsException();
@@ -64,7 +66,7 @@ public class UserService {
     * @param loginBody The login request
     * @return The authentication token. Null if the request was invalid
      */
-    public String loginUser(LoginBody loginBody) throws UserNotVerifiedException, MailFailureException {
+    public String loginUser(LoginBody loginBody) throws UserNotVerifiedException, EmailFailureException {
         Optional<LocalUser> opUser = localUserDAO.findByUsernameIgnoreCase(loginBody.getUsername());
         if (opUser.isPresent()){
             LocalUser user = opUser.get();
@@ -88,6 +90,10 @@ public class UserService {
         return null;
     }
 
+    /**
+     * Verifies a user from the given token
+     * @param token The token to use to verify a user
+     * @return True if it was verified, false if already verified or token invalid*/
     @Transactional
     public boolean verifyUser(String token){
         Optional<VerificationToken> opToken = verificationTokenDAO.findByToken(token);
@@ -102,5 +108,26 @@ public class UserService {
             }
         }
         return false;
+    }
+
+    public void forgotPassword(String email) throws EmailNotFoundException, EmailFailureException {
+        Optional<LocalUser> opUser = localUserDAO.findByEmailIgnoreCase(email);
+        if (opUser.isPresent()){
+            LocalUser user = opUser.get();
+            String token = jwtService.generatePasswordResetJWT(user);
+            emailService.sendPasswordResetEmail(user,token);
+        }else{
+            throw new EmailNotFoundException();
+        }
+    }
+
+    public void resetPassword(PasswordResetBody body){
+        String email = jwtService.getResetPasswordEmail(body.getToken());
+        Optional<LocalUser> opUser = localUserDAO.findByEmailIgnoreCase(email);
+        if(opUser.isPresent()){
+            LocalUser user = opUser.get();
+            user.setPassword(encryptionService.encryptPassword(body.getPassword()));
+            localUserDAO.save(user);
+        }
     }
 }
