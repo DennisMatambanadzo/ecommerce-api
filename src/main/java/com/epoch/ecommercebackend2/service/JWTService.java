@@ -26,9 +26,7 @@ public class JWTService {
     private Algorithm algorithm;
     /**The JWT claim key for the username*/
     private static final String USERNAME_KEY = "USERNAME";
-
     private static final String VERIFICATION_EMAIL_KEY = "VERIFICATION_EMAIL";
-
     private static final String RESET_PASSWORD_EMAIL_KEY = "RESET_PASSWORD";
 
 
@@ -52,6 +50,11 @@ public class JWTService {
                 .sign(algorithm);
     }
 
+    /**
+     * Generates a special token for verification of an email.
+     * @param user The user to create the token for.
+     * @return The token generated.
+     */
     public String generateVerificationJWT(LocalUser user){
         return JWT.create()
                 .withClaim(VERIFICATION_EMAIL_KEY, user.getEmail())
@@ -60,6 +63,11 @@ public class JWTService {
                 .sign(algorithm);
     }
 
+    /**
+     * Generates a JWT for use when resetting a password.
+     * @param user The user to generate for.
+     * @return The generated JWT token.
+     */
     public String generatePasswordResetJWT(LocalUser user){
         return JWT.create()
                 .withClaim(RESET_PASSWORD_EMAIL_KEY, user.getEmail())
@@ -68,10 +76,16 @@ public class JWTService {
                 .sign(algorithm);
     }
 
+    /**
+     * Gets the email from a password reset token.
+     * @param token The token to use.
+     * @return The email in the token if valid.
+     */
     public String getResetPasswordEmail(String token){
         DecodedJWT jwt = JWT.require(algorithm).build().verify(token);
         return jwt.getClaim(RESET_PASSWORD_EMAIL_KEY).asString();
     }
+
     /**
      * Gets the username out of a given JWT
      * @param token The token to decode

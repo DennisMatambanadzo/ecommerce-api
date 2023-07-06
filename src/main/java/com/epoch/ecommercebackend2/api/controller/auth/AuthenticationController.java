@@ -16,12 +16,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Rest Controller for handling authentication requests.
+ */
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
 
+    /** The user service. */
     private UserService userService;
 
+    /**
+     * Spring injected constructor.
+     * @param userService
+     */
     public AuthenticationController(UserService userService) {
         this.userService = userService;
     }
@@ -74,6 +82,12 @@ public class AuthenticationController {
         }
     }
 
+    /**
+     * Post mapping to verify the email of an account using the emailed token.
+     * @param token The token emailed for verification. This is not the same as a
+     *              authentication JWT.
+     * @return 200 if successful. 409 if failure.
+     */
     @PostMapping("/verify")
     public ResponseEntity verifyEmail(@RequestParam String token){
         if (userService.verifyUser(token)){
@@ -92,6 +106,11 @@ public class AuthenticationController {
         return user;
     }
 
+    /**
+     * Sends an email to the user with a link to reset their password.
+     * @param email The email to reset.
+     * @return Ok if sent, bad request if email not found.
+     */
     @PostMapping("/forgot")
     public ResponseEntity forgotPassword(@RequestParam String email){
         try{
@@ -103,7 +122,11 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
+    /**
+     * Resets the users password with the given token and password.
+     * @param body The information for the password reset.
+     * @return Okay if password was set.
+     */
     @PostMapping("/reset")
     public ResponseEntity resetPassword(@Valid @RequestBody PasswordResetBody body){
         userService.resetPassword(body);

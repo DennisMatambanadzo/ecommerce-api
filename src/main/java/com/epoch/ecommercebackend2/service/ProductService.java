@@ -9,6 +9,10 @@ import java.util.List;
 @Service
 public class ProductService {
 
+    /**
+     * Constructor for spring injection.
+     * @param productDAO
+     */
     private ProductDAO productDAO;
 
 
@@ -16,6 +20,10 @@ public class ProductService {
         this.productDAO = productDAO;
     }
 
+    /**
+     * Gets the all products available.
+     * @return The list of products.
+     */
     public List<Product> getProducts(){
         return productDAO.findAll();
     }

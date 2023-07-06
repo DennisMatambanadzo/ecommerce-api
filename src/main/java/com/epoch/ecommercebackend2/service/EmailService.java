@@ -8,12 +8,17 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-
+/**
+ * Service for handling emails being sent.
+ */
 @Service
 public class EmailService {
 
+    /** The from address to use on emails. */
     @Value("${email.from}")
     private String fromMessage;
+
+    /** The url of the front end for links. */
     @Value("${app.frontend.url}")
     private String url;
 
@@ -57,6 +62,12 @@ public class EmailService {
         }
     }
 
+    /**
+     * Sends a password reset request email to the user.
+     * @param user The user to send to.
+     * @param token The token to send the user for reset.
+     * @throws EmailFailureException
+     */
     public void sendPasswordResetEmail(LocalUser user, String token) throws EmailFailureException{
         SimpleMailMessage message = makeMailMessage();
         message.setTo(user.getEmail());
