@@ -13,19 +13,22 @@ import java.util.Date;
 @Service
 public class JWTService {
 
+    /**The secret key to encrypt the JWTs with*/
     @Value("${jwt.algorithm.key}")
     private String algorithmKey;
+    /**The issuer the JWT is signed with*/
     @Value("${jwt.issuer}")
     private String issuer;
-    /**How many seconds from generation should the JWT expire*/
+    /**How many seconds from generation should the JWT expire?*/
     @Value("${jwt.expiryInSeconds}")
     private int expiryInSeconds;
     /**The algorithm generated post construction*/
     private Algorithm algorithm;
     /**The JWT claim key for the username*/
     private static final String USERNAME_KEY = "USERNAME";
+    private static final String VERIFICATION_EMAIL_KEY = "VERIFICATION_EMAIL";
+    private static final String RESET_PASSWORD_EMAIL_KEY = "RESET_PASSWORD";
 
-    private static final String EMAIL_KEY = "EMAIL";
 
     /**
      * Post construction method
@@ -42,17 +45,45 @@ public class JWTService {
     public String generateJWT(LocalUser user){
         return JWT.create()
                 .withClaim(USERNAME_KEY, user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis()+ (1000 +expiryInSeconds)))
+                .withExpiresAt(new Date(System.currentTimeMillis()+ (1000 * expiryInSeconds)))
                 .withIssuer(issuer)
                 .sign(algorithm);
     }
 
+    /**
+     * Generates a special token for verification of an email.
+     * @param user The user to create the token for.
+     * @return The token generated.
+     */
     public String generateVerificationJWT(LocalUser user){
         return JWT.create()
-                .withClaim(EMAIL_KEY, user.getEmail())
-                .withExpiresAt(new Date(System.currentTimeMillis()+ (1000 +expiryInSeconds)))
+                .withClaim(VERIFICATION_EMAIL_KEY, user.getEmail())
+                .withExpiresAt(new Date(System.currentTimeMillis()+ (1000 * expiryInSeconds)))
                 .withIssuer(issuer)
                 .sign(algorithm);
+    }
+
+    /**
+     * Generates a JWT for use when resetting a password.
+     * @param user The user to generate for.
+     * @return The generated JWT token.
+     */
+    public String generatePasswordResetJWT(LocalUser user){
+        return JWT.create()
+                .withClaim(RESET_PASSWORD_EMAIL_KEY, user.getEmail())
+                .withExpiresAt(new Date(System.currentTimeMillis()+ (1000 * 60 * 30)))
+                .withIssuer(issuer)
+                .sign(algorithm);
+    }
+
+    /**
+     * Gets the email from a password reset token.
+     * @param token The token to use.
+     * @return The email in the token if valid.
+     */
+    public String getResetPasswordEmail(String token){
+        DecodedJWT jwt = JWT.require(algorithm).build().verify(token);
+        return jwt.getClaim(RESET_PASSWORD_EMAIL_KEY).asString();
     }
 
     /**

@@ -26,9 +26,13 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         http.csrf(AbstractHttpConfigurer::disable);
+        // We need to make sure our authentication filter is run before the http request filter is run.
         http.addFilterBefore(jwtRequestFilter, AuthorizationFilter.class);
         http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/product","/auth/register","/auth/login","/auth/verify","/auth/me").permitAll()
+                // Specific exclusions or rules.
+                .requestMatchers("/product","/auth/register","/auth/login",
+                        "/auth/forgot","/auth/reset","/auth/verify","/auth/me").permitAll()
+                // Everything else should be authenticated.
                 .anyRequest().authenticated());
         return http.build();
     }
