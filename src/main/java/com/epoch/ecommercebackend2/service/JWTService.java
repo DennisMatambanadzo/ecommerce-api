@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-
+// This purpose of this class is to generate a token and to get a username from a token
 @Service
 public class JWTService {
 
@@ -27,6 +27,7 @@ public class JWTService {
         algorithm = Algorithm.HMAC256(algorithmKey);
     }
 
+    // This method generates the JWT token
     public String generateJWT(LocalUser user){
         return JWT.create()
                 .withClaim(USERNAME_KEY, user.getUsername())
@@ -34,6 +35,7 @@ public class JWTService {
                 .withIssuer(issuer)
                 .sign(algorithm);
     }
+    // This method gets the username from the JWT toekn
     public String getUsername(String token){
         return JWT.decode(token).getClaim(USERNAME_KEY).asString();
     }
